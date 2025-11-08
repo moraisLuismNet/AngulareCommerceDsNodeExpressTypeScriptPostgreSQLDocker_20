@@ -10,53 +10,53 @@ import {
   ChangeDetectorRef,
   //environment
 } from "@angular/core";
-import { CommonModule } from '@angular/common';
+import { CommonModule } from "@angular/common";
 import { FormsModule, NgForm } from "@angular/forms";
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterModule } from "@angular/router";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 
 // PrimeNG
 import { ConfirmationService, MessageService } from "primeng/api";
-import { ButtonModule } from 'primeng/button';
-import { TableModule } from 'primeng/table';
-import { InputTextModule } from 'primeng/inputtext';
-import { InputNumberModule } from 'primeng/inputnumber';
-import { DialogModule } from 'primeng/dialog';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { FileUploadModule } from 'primeng/fileupload';
-import { TooltipModule } from 'primeng/tooltip';
+import { ButtonModule } from "primeng/button";
+import { TableModule } from "primeng/table";
+import { InputTextModule } from "primeng/inputtext";
+import { InputNumberModule } from "primeng/inputnumber";
+import { DialogModule } from "primeng/dialog";
+import { ConfirmDialogModule } from "primeng/confirmdialog";
+import { FileUploadModule } from "primeng/fileupload";
+import { TooltipModule } from "primeng/tooltip";
 
 // Services
-import { IRecord } from "../EcommerceInterface";
-import { RecordsService } from "../services/RecordsService";
-import { GroupsService } from "../services/GroupsService";
-import { StockService } from "../services/StockService";
-import { CartService } from "../services/CartService";
-import { UserService } from "src/app/services/UserService";
-import { MessageModule } from 'primeng/message';
+import { IRecord } from "../ecommerce.interface";
+import { RecordsService } from "../services/records";
+import { GroupsService } from "../services/groups";
+import { StockService } from "../services/stock";
+import { CartService } from "../services/cart";
+import { UserService } from "src/app/services/user";
+import { MessageModule } from "primeng/message";
 
 import { environment } from "src/environments/environment";
 
 @Component({
-    selector: "app-records",
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [
-        CommonModule,
-        FormsModule,
-        RouterModule,
-        ButtonModule,
-        TableModule,
-        InputTextModule,
-        InputNumberModule,
-        DialogModule,
-        ConfirmDialogModule,
-        FileUploadModule,
-        TooltipModule,
-        MessageModule
-    ],
-    templateUrl: "./RecordsComponent.html",
-    styleUrls: ["./RecordsComponent.css"],
-    providers: [ConfirmationService, MessageService]
+  selector: "app-records",
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    ButtonModule,
+    TableModule,
+    InputTextModule,
+    InputNumberModule,
+    DialogModule,
+    ConfirmDialogModule,
+    FileUploadModule,
+    TooltipModule,
+    MessageModule,
+  ],
+  templateUrl: "./records.html",
+  styleUrls: ["./records.css"],
+  providers: [ConfirmationService, MessageService],
 })
 export class RecordsComponent implements OnInit {
   @ViewChild("form") form!: NgForm;
@@ -104,7 +104,6 @@ export class RecordsComponent implements OnInit {
     private cdr: ChangeDetectorRef,
     private messageService: MessageService
   ) {
-
     // This will run after the next change detection cycle
     afterNextRender(() => {
       this.updateTableVisuals();
@@ -161,8 +160,8 @@ export class RecordsComponent implements OnInit {
     this.recordsService.getRecords().subscribe({
       next: (response: any) => {
         if (!response) {
-          console.error('No data was received from the service');
-          this.errorMessage = 'No data was received from the service';
+          console.error("No data was received from the service");
+          this.errorMessage = "No data was received from the service";
           this.visibleError = true;
           return;
         }
@@ -187,12 +186,12 @@ export class RecordsComponent implements OnInit {
           recordsArray = response.data.$values;
         }
         // Single record response
-        else if (response.data && typeof response.data === 'object') {
+        else if (response.data && typeof response.data === "object") {
           recordsArray = [response.data];
         }
 
         if (recordsArray.length === 0) {
-          console.warn('No records were received from the service');
+          console.warn("No records were received from the service");
         }
 
         // Normalize the data to ensure consistent property names
@@ -201,25 +200,34 @@ export class RecordsComponent implements OnInit {
           const normalizedRecord = { ...record };
 
           // Handle case where server returns Stock instead of stock
-          if (normalizedRecord.Stock !== undefined && normalizedRecord.stock === undefined) {
+          if (
+            normalizedRecord.Stock !== undefined &&
+            normalizedRecord.stock === undefined
+          ) {
             normalizedRecord.stock = normalizedRecord.Stock;
             delete normalizedRecord.Stock;
           }
 
           // Ensure stock is a number
-          if (typeof normalizedRecord.stock === 'string') {
+          if (typeof normalizedRecord.stock === "string") {
             normalizedRecord.stock = parseInt(normalizedRecord.stock, 10) || 0;
           }
 
           // Ensure image URL is properly set
           // Prefer ImageRecord if available, otherwise use PhotoName
-          if (normalizedRecord.ImageRecord && normalizedRecord.ImageRecord.trim() !== '') {
+          if (
+            normalizedRecord.ImageRecord &&
+            normalizedRecord.ImageRecord.trim() !== ""
+          ) {
             normalizedRecord.PhotoName = normalizedRecord.ImageRecord.trim();
-          } else if (normalizedRecord.PhotoName && normalizedRecord.PhotoName.trim() !== '') {
+          } else if (
+            normalizedRecord.PhotoName &&
+            normalizedRecord.PhotoName.trim() !== ""
+          ) {
             normalizedRecord.ImageRecord = normalizedRecord.PhotoName.trim();
           } else {
-            normalizedRecord.PhotoName = '';
-            normalizedRecord.ImageRecord = '';
+            normalizedRecord.PhotoName = "";
+            normalizedRecord.ImageRecord = "";
           }
 
           return normalizedRecord;
@@ -237,12 +245,13 @@ export class RecordsComponent implements OnInit {
             // Assign the group name to each record
             recordsArray.forEach((record: IRecord) => {
               const group = groups.find(
-                (g: any) => g.IdGroup === record.GroupId || g.idGroup === record.GroupId
+                (g: any) =>
+                  g.IdGroup === record.GroupId || g.idGroup === record.GroupId
               );
               if (group) {
-                record.GroupName = group.NameGroup || group.nameGroup || '';
+                record.GroupName = group.NameGroup || group.nameGroup || "";
                 // Ensure GroupId is a number
-                if (typeof record.GroupId === 'string') {
+                if (typeof record.GroupId === "string") {
                   record.GroupId = parseInt(record.GroupId, 10);
                 }
               }
@@ -335,11 +344,11 @@ export class RecordsComponent implements OnInit {
       const imageUrl = record.ImageRecord.toString();
 
       // If it's a base64 string or a data URL
-      if (imageUrl.startsWith('data:image')) {
+      if (imageUrl.startsWith("data:image")) {
         this.photo = imageUrl;
       }
       // If it's just a filename, construct the full URL
-      else if (!imageUrl.startsWith('http')) {
+      else if (!imageUrl.startsWith("http")) {
         this.photo = `${environment.urlAPI}uploads/${imageUrl}`;
       }
       // If it's already a full URL
@@ -348,35 +357,34 @@ export class RecordsComponent implements OnInit {
       }
     } else {
       // Set a default image if no image is available
-      this.photo = 'assets/images/no-image-available.png';
-      console.warn('No image available for record:', record.TitleRecord);
+      this.photo = "assets/images/no-image-available.png";
+      console.warn("No image available for record:", record.TitleRecord);
     }
 
     this.visiblePhoto = true;
   }
 
   save() {
-
     // Validate required fields
-    if (!this.record.TitleRecord || this.record.TitleRecord.trim() === '') {
-      console.error('Validation error: Title is required');
+    if (!this.record.TitleRecord || this.record.TitleRecord.trim() === "") {
+      console.error("Validation error: Title is required");
       this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'Please enter a title for the record',
-        life: 3000
+        severity: "error",
+        summary: "Error",
+        detail: "Please enter a title for the record",
+        life: 3000,
       });
       return;
     }
 
     // Validate GroupId
     if (!this.record.GroupId) {
-      console.error('Validation error: GroupId is required');
+      console.error("Validation error: GroupId is required");
       this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'Please select a group for the record',
-        life: 3000
+        severity: "error",
+        summary: "Error",
+        detail: "Please select a group for the record",
+        life: 3000,
       });
       return;
     }
@@ -385,18 +393,24 @@ export class RecordsComponent implements OnInit {
     const recordToSend = { ...this.record };
 
     // Ensure stock is a number
-    if (typeof recordToSend.stock === 'string') {
+    if (typeof recordToSend.stock === "string") {
       recordToSend.stock = parseInt(recordToSend.stock as any, 10);
     }
 
     // Ensure Price is a number
-    if ((!recordToSend.PhotoName || recordToSend.PhotoName.trim() === '') &&
-        recordToSend.ImageRecord && recordToSend.ImageRecord.trim() !== '') {
+    if (
+      (!recordToSend.PhotoName || recordToSend.PhotoName.trim() === "") &&
+      recordToSend.ImageRecord &&
+      recordToSend.ImageRecord.trim() !== ""
+    ) {
       recordToSend.PhotoName = recordToSend.ImageRecord.trim();
     }
 
-    if (recordToSend.PhotoName && recordToSend.PhotoName.trim() !== '' &&
-        (!recordToSend.ImageRecord || recordToSend.ImageRecord.trim() === '')) {
+    if (
+      recordToSend.PhotoName &&
+      recordToSend.PhotoName.trim() !== "" &&
+      (!recordToSend.ImageRecord || recordToSend.ImageRecord.trim() === "")
+    ) {
       recordToSend.ImageRecord = recordToSend.PhotoName.trim();
     }
 
@@ -405,36 +419,36 @@ export class RecordsComponent implements OnInit {
       this.recordsService.addRecord(recordToSend).subscribe({
         next: (response: any) => {
           this.messageService.add({
-            severity: 'success',
-            summary: 'Success',
-            detail: 'Record added successfully',
-            life: 3000
+            severity: "success",
+            summary: "Success",
+            detail: "Record added successfully",
+            life: 3000,
           });
           this.cancelEdition();
           this.getRecords();
         },
         error: (err) => {
-          console.error('Error adding record:', err);
+          console.error("Error adding record:", err);
           this.handleSaveError(err);
-        }
+        },
       });
     } else {
       // Update existing record
       this.recordsService.updateRecord(recordToSend).subscribe({
         next: (response: any) => {
           this.messageService.add({
-            severity: 'success',
-            summary: 'Success',
-            detail: 'Record updated successfully',
-            life: 3000
+            severity: "success",
+            summary: "Success",
+            detail: "Record updated successfully",
+            life: 3000,
           });
           this.cancelEdition();
           this.getRecords();
         },
         error: (err) => {
-          console.error('Error updating the record:', err);
+          console.error("Error updating the record:", err);
           this.handleSaveError(err);
-        }
+        },
       });
     }
   }
@@ -443,32 +457,33 @@ export class RecordsComponent implements OnInit {
     this.visibleError = true;
 
     // Enhanced error handling
-    let errorMessage = 'An error occurred while processing your request';
+    let errorMessage = "An error occurred while processing your request";
 
     if (err.status === 400) {
       // Handle 400 Bad Request with validation errors
-      if (err.error && typeof err.error === 'object') {
+      if (err.error && typeof err.error === "object") {
         // If the error has specific validation messages
         const errorObj = err.error;
-        errorMessage = 'Validation error: ' + Object.values(errorObj).flat().join(' ');
-      } else if (err.error && typeof err.error === 'string') {
+        errorMessage =
+          "Validation error: " + Object.values(errorObj).flat().join(" ");
+      } else if (err.error && typeof err.error === "string") {
         errorMessage = err.error;
       }
     } else if (err.status === 401) {
-      errorMessage = 'Authentication required. Please log in again.';
+      errorMessage = "Authentication required. Please log in again.";
     } else if (err.status === 403) {
-      errorMessage = 'You do not have permission to perform this action.';
+      errorMessage = "You do not have permission to perform this action.";
     } else if (err.status === 404) {
-      errorMessage = 'The requested resource was not found.';
+      errorMessage = "The requested resource was not found.";
     } else if (err.status >= 500) {
-      errorMessage = 'A server error occurred. Please try again later.';
+      errorMessage = "A server error occurred. Please try again later.";
     }
 
     this.messageService.add({
-      severity: 'error',
-      summary: 'Error',
+      severity: "error",
+      summary: "Error",
       detail: errorMessage,
-      life: 5000
+      life: 5000,
     });
 
     this.controlError(err);
@@ -486,32 +501,31 @@ export class RecordsComponent implements OnInit {
   }
 
   deleteRecord(id: number) {
-
     this.recordsService.deleteRecord(id).subscribe({
       next: (data: any) => {
         this.visibleError = false;
         this.messageService.add({
-          severity: 'success',
-          summary: 'Success',
-          detail: 'Record deleted successfully',
-          life: 3000
+          severity: "success",
+          summary: "Success",
+          detail: "Record deleted successfully",
+          life: 3000,
         });
         this.getRecords();
       },
       error: (err: any) => {
-        console.error('Error deleting record:', err);
+        console.error("Error deleting record:", err);
         this.visibleError = true;
 
-        let errorMessage = 'An error occurred while deleting the record';
+        let errorMessage = "An error occurred while deleting the record";
 
         if (err.status === 401) {
-          errorMessage = 'Authentication required. Please log in again.';
+          errorMessage = "Authentication required. Please log in again.";
           // Optionally redirect to login
           // this.router.navigate(['/login']);
         } else if (err.status === 403) {
-          errorMessage = 'You do not have permission to delete this record';
+          errorMessage = "You do not have permission to delete this record";
         } else if (err.status === 404) {
-          errorMessage = 'Record not found or already deleted';
+          errorMessage = "Record not found or already deleted";
         } else if (err.response) {
           // Handle server response with error details
           if (err.response.message) {
@@ -522,10 +536,10 @@ export class RecordsComponent implements OnInit {
         }
 
         this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
+          severity: "error",
+          summary: "Error",
           detail: errorMessage,
-          life: 5000
+          life: 5000,
         });
 
         this.controlError(err);
@@ -535,11 +549,10 @@ export class RecordsComponent implements OnInit {
   }
 
   edit(record: IRecord) {
-
     // Create a new object to avoid reference problems
     const recordCopy: IRecord = {
       IdRecord: record.IdRecord || 0,
-      TitleRecord: record.TitleRecord || '',
+      TitleRecord: record.TitleRecord || "",
       YearOfPublication: record.YearOfPublication || null,
       ImageRecord: record.ImageRecord || null,
       Photo: null, // We don't set Photo directly
@@ -548,8 +561,8 @@ export class RecordsComponent implements OnInit {
       stock: record.stock || 0, // Default to 0 if undefined
       Discontinued: record.Discontinued || false,
       GroupId: record.GroupId || null,
-      GroupName: record.GroupName || '',
-      NameGroup: record.NameGroup || ''
+      GroupName: record.GroupName || "",
+      NameGroup: record.NameGroup || "",
     };
 
     // Assign the copy to the component's record
@@ -560,9 +573,9 @@ export class RecordsComponent implements OnInit {
 
     // Scroll to the form smoothly
     setTimeout(() => {
-      const formElement = document.querySelector('.form-container');
+      const formElement = document.querySelector(".form-container");
       if (formElement) {
-        formElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        formElement.scrollIntoView({ behavior: "smooth", block: "start" });
       }
     }, 100);
 
@@ -584,7 +597,7 @@ export class RecordsComponent implements OnInit {
     return url.split("/").pop() || "";
   }
 
-// ...
+  // ...
   cancelEdition() {
     // Reset the form first
     if (this.form) {
@@ -602,7 +615,7 @@ export class RecordsComponent implements OnInit {
       Price: 0,
       stock: 0,
       Discontinued: false,
-      GroupId: null,  // This will make the default option selected
+      GroupId: null, // This will make the default option selected
       GroupName: "",
       NameGroup: "",
     };

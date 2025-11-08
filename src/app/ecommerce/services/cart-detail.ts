@@ -1,5 +1,5 @@
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Injectable } from "@angular/core";
+import { HttpClient, HttpHeaders } from "@angular/common/http";
 import {
   catchError,
   Observable,
@@ -8,16 +8,16 @@ import {
   map,
   throwError,
   switchMap,
-} from 'rxjs';
-import { environment } from 'src/environments/environment';
-import { AuthGuard } from '../../guards/AuthGuardService';
-import { ICartDetail, IRecord } from '../EcommerceInterface';
-import { UserService } from 'src/app/services/UserService';
-import { StockService } from './StockService';
-import { RecordsService } from './RecordsService';
+} from "rxjs";
+import { environment } from "src/environments/environment";
+import { AuthGuard } from "../../guards/auth-guard";
+import { ICartDetail, IRecord } from "../ecommerce.interface";
+import { UserService } from "src/app/services/user";
+import { StockService } from "./stock";
+import { RecordsService } from "./records";
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: "root",
 })
 export class CartDetailService {
   urlAPI = environment.urlAPI;
@@ -35,21 +35,19 @@ export class CartDetailService {
     if (this.userService.email !== email) {
       return of({ totalItems: 0 });
     }
-    return this.http
-      .get(`${this.urlAPI}cart-details/count/${email}`)
-      .pipe(
-        catchError((error) => {
-          console.error('Error getting cart item count:', error);
-          return of({ totalItems: 0 });
-        })
-      );
+    return this.http.get(`${this.urlAPI}cart-details/count/${email}`).pipe(
+      catchError((error) => {
+        console.error("Error getting cart item count:", error);
+        return of({ totalItems: 0 });
+      })
+    );
   }
 
   getCartDetails(email: string): Observable<any> {
     const url = `${this.urlAPI}cart-details/${encodeURIComponent(email)}`;
     return this.http.get(url).pipe(
       catchError((error) => {
-        console.error('Error getting cart details:', error);
+        console.error("Error getting cart details:", error);
         return of([]);
       })
     );
@@ -58,7 +56,7 @@ export class CartDetailService {
   getRecordDetails(recordId: number): Observable<IRecord | null> {
     return this.http.get<IRecord>(`${this.urlAPI}records/${recordId}`).pipe(
       catchError((error) => {
-        console.error('Error getting record details:', error);
+        console.error("Error getting record details:", error);
         return of(null);
       })
     );
@@ -71,35 +69,52 @@ export class CartDetailService {
   ): Observable<any> {
     const headers = this.getHeaders();
     return this.http
-      .post<{success: boolean; updatedStock: number; message: string; cartId: number}>(
+      .post<{
+        success: boolean;
+        updatedStock: number;
+        message: string;
+        cartId: number;
+      }>(
         `${this.urlAPI}cart-details/add/${encodeURIComponent(email)}`,
         {
           recordId: recordId,
-          amount: amount
+          amount: amount,
         },
         { headers }
       )
       .pipe(
         tap((response) => {
-          if (response && response.success && response.updatedStock !== undefined) {
+          if (
+            response &&
+            response.success &&
+            response.updatedStock !== undefined
+          ) {
             // Use the updatedStock from the response instead of making another API call
-            this.stockService.notifyStockUpdate(recordId, response.updatedStock);
-            
+            this.stockService.notifyStockUpdate(
+              recordId,
+              response.updatedStock
+            );
+
             // Return the updated record with the new stock value
             return {
               id: recordId,
               stock: response.updatedStock,
               amount: amount,
               success: true,
-              message: response.message
+              message: response.message,
             };
           } else {
-            console.error('[CartDetailService] Invalid response format:', response);
-            return throwError(() => new Error(response?.message || 'Failed to add item to cart'));
+            console.error(
+              "[CartDetailService] Invalid response format:",
+              response
+            );
+            return throwError(
+              () => new Error(response?.message || "Failed to add item to cart")
+            );
           }
         }),
         catchError((error) => {
-          console.error('[CartDetailService] Error in addToCartDetail:', error);
+          console.error("[CartDetailService] Error in addToCartDetail:", error);
           return throwError(() => error);
         })
       );
@@ -112,35 +127,53 @@ export class CartDetailService {
   ): Observable<any> {
     const headers = this.getHeaders();
     return this.http
-      .post<{success: boolean; updatedStock: number; message: string}>(
+      .post<{ success: boolean; updatedStock: number; message: string }>(
         `${this.urlAPI}cart-details/remove/${encodeURIComponent(email)}`,
         {
           recordId: recordId,
-          amount: amount
+          amount: amount,
         },
         { headers }
       )
       .pipe(
         tap((response) => {
-          if (response && response.success && response.updatedStock !== undefined) {
+          if (
+            response &&
+            response.success &&
+            response.updatedStock !== undefined
+          ) {
             // Use the updatedStock from the response instead of making another API call
-            this.stockService.notifyStockUpdate(recordId, response.updatedStock);
-            
+            this.stockService.notifyStockUpdate(
+              recordId,
+              response.updatedStock
+            );
+
             // Return the updated record with the new stock value
             return {
               id: recordId,
               stock: response.updatedStock,
               amount: amount,
               success: true,
-              message: response.message
+              message: response.message,
             };
           } else {
-            console.error('[CartDetailService] Invalid response format:', response);
-            return throwError(() => new Error(response?.message || 'Failed to remove item from cart'));
+            console.error(
+              "[CartDetailService] Invalid response format:",
+              response
+            );
+            return throwError(
+              () =>
+                new Error(
+                  response?.message || "Failed to remove item from cart"
+                )
+            );
           }
         }),
         catchError((error) => {
-          console.error('[CartDetailService] Error in removeFromCartDetail:', error);
+          console.error(
+            "[CartDetailService] Error in removeFromCartDetail:",
+            error
+          );
           return throwError(() => error);
         })
       );
@@ -154,8 +187,8 @@ export class CartDetailService {
   }
 
   updateRecordStock(recordId: number, change: number): Observable<IRecord> {
-    if (typeof change !== 'number' || isNaN(change)) {
-      return throwError(() => new Error('Invalid stock change value'));
+    if (typeof change !== "number" || isNaN(change)) {
+      return throwError(() => new Error("Invalid stock change value"));
     }
 
     return this.http
@@ -167,10 +200,10 @@ export class CartDetailService {
       .pipe(
         tap((response) => {
           const newStock = response?.newStock;
-          if (typeof newStock === 'number' && newStock >= 0) {
+          if (typeof newStock === "number" && newStock >= 0) {
             this.stockService.notifyStockUpdate(recordId, newStock);
           } else {
-            throw new Error('Received invalid stock value from server');
+            throw new Error("Received invalid stock value from server");
           }
         }),
         map(
@@ -178,20 +211,20 @@ export class CartDetailService {
             ({
               IdRecord: recordId,
               stock: response.newStock,
-              TitleRecord: '',
+              TitleRecord: "",
               YearOfPublication: null,
               ImageRecord: null,
               Photo: null,
               Price: 0,
               Discontinued: false,
               GroupId: null,
-              GroupName: '',
-              NameGroup: '',
+              GroupName: "",
+              NameGroup: "",
             } as IRecord)
         ),
         catchError((error) => {
           return throwError(
-            () => new Error('Failed to update stock. Please try again.')
+            () => new Error("Failed to update stock. Please try again.")
           );
         })
       );
@@ -261,12 +294,12 @@ export class CartDetailService {
 
   getCartDetailsByEmail(email: string): Observable<ICartDetail[]> {
     const url = `${this.urlAPI}cart-details/${encodeURIComponent(email)}`;
-    
+
     const headers = this.getHeaders();
-    
+
     return this.http.get<ICartDetail[]>(url, { headers }).pipe(
-      catchError(error => {
-        console.error('Error in getCartDetailsByEmail:', error);
+      catchError((error) => {
+        console.error("Error in getCartDetailsByEmail:", error);
         return throwError(() => error);
       })
     );

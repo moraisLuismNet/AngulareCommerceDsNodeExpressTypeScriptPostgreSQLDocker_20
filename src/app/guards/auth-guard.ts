@@ -1,44 +1,49 @@
-import { Injectable } from '@angular/core';
-import { Router, CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
-import { ILoginResponse } from '../interfaces/LoginInterface';
-import { jwtDecode } from 'jwt-decode';
-import { Observable } from 'rxjs';
+import { Injectable } from "@angular/core";
+import {
+  Router,
+  CanActivate,
+  ActivatedRouteSnapshot,
+  RouterStateSnapshot,
+} from "@angular/router";
+import { ILoginResponse } from "../interfaces/login.interface";
+import { jwtDecode } from "jwt-decode";
+import { Observable } from "rxjs";
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: "root",
 })
 export class AuthGuard implements CanActivate {
   constructor(private router: Router) {}
 
   getRole(): string {
-    const userData = sessionStorage.getItem('user');
+    const userData = sessionStorage.getItem("user");
     if (userData) {
       const user: ILoginResponse = JSON.parse(userData);
-      return user.role || '';
+      return user.role || "";
     }
-    return '';
+    return "";
   }
 
   isLoggedIn(): boolean {
-    return !!sessionStorage.getItem('user');
+    return !!sessionStorage.getItem("user");
   }
 
   getUser(): string {
-    const infoUser = sessionStorage.getItem('user');
+    const infoUser = sessionStorage.getItem("user");
     if (infoUser) {
       const userInfo: ILoginResponse = JSON.parse(infoUser);
       return userInfo.email;
     }
-    return '';
+    return "";
   }
 
   getToken(): string {
-    const infoUser = sessionStorage.getItem('user');
+    const infoUser = sessionStorage.getItem("user");
     if (infoUser) {
       const userInfo: ILoginResponse = JSON.parse(infoUser);
       return userInfo.token;
     }
-    return '';
+    return "";
   }
 
   canActivate(
@@ -47,24 +52,24 @@ export class AuthGuard implements CanActivate {
   ): Observable<boolean> | Promise<boolean> | boolean {
     if (this.isLoggedIn()) {
       // Check if the route requires administrator role
-      const requiresAdmin = route.data['requiresAdmin'] || false;
+      const requiresAdmin = route.data["requiresAdmin"] || false;
       if (requiresAdmin && !this.isAdmin()) {
-        this.router.navigate(['/']);
+        this.router.navigate(["/"]);
         return false;
       }
       return true;
     }
 
     // Redirect to login if not authenticated
-    this.router.navigate(['/login'], { queryParams: { returnUrl: state.url } });
+    this.router.navigate(["/login"], { queryParams: { returnUrl: state.url } });
     return false;
   }
 
   isAdmin(): boolean {
-    const userData = sessionStorage.getItem('user');
+    const userData = sessionStorage.getItem("user");
     if (userData) {
       const user: ILoginResponse = JSON.parse(userData);
-      return user.role?.toLowerCase() === 'admin';
+      return user.role?.toLowerCase() === "admin";
     }
     return false;
   }
@@ -74,10 +79,10 @@ export class AuthGuard implements CanActivate {
     if (token) {
       try {
         const decodedToken: any = jwtDecode(token);
-        const cartId = decodedToken['CartId'];
+        const cartId = decodedToken["CartId"];
         return cartId !== undefined ? Number(cartId) : null;
       } catch (error) {
-        console.error('Error decoding token:', error);
+        console.error("Error decoding token:", error);
         return null;
       }
     }

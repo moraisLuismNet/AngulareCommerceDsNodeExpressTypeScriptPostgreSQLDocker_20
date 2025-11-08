@@ -1,41 +1,50 @@
-import { Component, OnInit, ViewChild, ElementRef, afterNextRender, inject, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule, NgForm } from '@angular/forms';
-import { Subject } from 'rxjs';
+import {
+  Component,
+  OnInit,
+  ViewChild,
+  ElementRef,
+  afterNextRender,
+  inject,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+} from "@angular/core";
+import { CommonModule } from "@angular/common";
+import { FormsModule, NgForm } from "@angular/forms";
+import { Subject } from "rxjs";
 
 // PrimeNG
-import { ConfirmationService, MessageService } from 'primeng/api';
-import { TableModule } from 'primeng/table';
-import { ButtonModule } from 'primeng/button';
-import { InputTextModule } from 'primeng/inputtext';
-import { DialogModule } from 'primeng/dialog';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { TooltipModule } from 'primeng/tooltip';
-import { MessageModule } from 'primeng/message';
+import { ConfirmationService, MessageService } from "primeng/api";
+import { TableModule } from "primeng/table";
+import { ButtonModule } from "primeng/button";
+import { InputTextModule } from "primeng/inputtext";
+import { DialogModule } from "primeng/dialog";
+import { ConfirmDialogModule } from "primeng/confirmdialog";
+import { TooltipModule } from "primeng/tooltip";
+import { MessageModule } from "primeng/message";
 
 // Services & Interfaces
-import { IGenre } from '../EcommerceInterface';
-import { GenresService } from '../services/GenresService';
+import { IGenre } from "../ecommerce.interface";
+import { GenresService } from "../services/genres";
 
 @Component({
-    selector: 'app-genres',
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [
-        CommonModule,
-        FormsModule,
-        TableModule,
-        ButtonModule,
-        InputTextModule,
-        DialogModule,
-        ConfirmDialogModule,
-        TooltipModule,
-        MessageModule
-    ],
-    templateUrl: './GenresComponent.html',
-    providers: [ConfirmationService, MessageService]
+  selector: "app-genres",
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    CommonModule,
+    FormsModule,
+    TableModule,
+    ButtonModule,
+    InputTextModule,
+    DialogModule,
+    ConfirmDialogModule,
+    TooltipModule,
+    MessageModule,
+  ],
+  templateUrl: "./genres.html",
+  providers: [ConfirmationService, MessageService],
 })
 export class GenresComponent implements OnInit {
-  @ViewChild('genresTable') genresTable!: ElementRef<HTMLTableElement>;
+  @ViewChild("genresTable") genresTable!: ElementRef<HTMLTableElement>;
   private resizeObserver!: ResizeObserver;
   private destroy$ = new Subject<void>();
 
@@ -50,17 +59,17 @@ export class GenresComponent implements OnInit {
       this.setupTableResizeObserver();
     });
   }
-  @ViewChild('form') form!: NgForm;
+  @ViewChild("form") form!: NgForm;
   visibleError = false;
-  errorMessage = '';
+  errorMessage = "";
   genres: IGenre[] = [];
   filteredGenres: IGenre[] = [];
   visibleConfirm = false;
-  searchTerm: string = '';
+  searchTerm: string = "";
 
   genre: IGenre = {
     IdMusicGenre: 0,
-    NameMusicGenre: '',
+    NameMusicGenre: "",
   };
 
   ngOnInit(): void {
@@ -73,7 +82,11 @@ export class GenresComponent implements OnInit {
         this.visibleError = false;
 
         // Check the response format
-        if (response && response.success !== undefined && Array.isArray(response.data)) {
+        if (
+          response &&
+          response.success !== undefined &&
+          Array.isArray(response.data)
+        ) {
           // Format: {success: boolean, data: IGenre[]}
           this.genres = response.data;
         } else if (Array.isArray(response)) {
@@ -83,17 +96,17 @@ export class GenresComponent implements OnInit {
           // Format: {$values: IGenre[]}
           this.genres = response.$values;
         } else {
-          console.warn('Unexpected response format:', response);
+          console.warn("Unexpected response format:", response);
           this.genres = [];
         }
-        
+
         this.filteredGenres = [...this.genres];
-        
+
         // Force change detection
         this.cdr.markForCheck();
       },
       error: (err) => {
-        console.error('Error getting genres:', err);
+        console.error("Error getting genres:", err);
         this.visibleError = true;
         this.controlError(err);
         this.cdr.markForCheck();
@@ -137,17 +150,17 @@ export class GenresComponent implements OnInit {
   cancelEdition() {
     this.genre = {
       IdMusicGenre: 0,
-      NameMusicGenre: '',
+      NameMusicGenre: "",
     };
   }
 
   confirmDelete(genre: IGenre) {
     this.confirmationService.confirm({
       message: `Delete the genre ${genre.NameMusicGenre}?`,
-      header: 'Are you sure?',
-      icon: 'pi pi-exclamation-triangle',
-      acceptLabel: 'Yes',
-      acceptButtonStyleClass: 'p-button-danger',
+      header: "Are you sure?",
+      icon: "pi pi-exclamation-triangle",
+      acceptLabel: "Yes",
+      acceptButtonStyleClass: "p-button-danger",
       accept: () => this.deleteGenre(genre.IdMusicGenre!),
     });
   }
@@ -157,7 +170,7 @@ export class GenresComponent implements OnInit {
       next: (data) => {
         this.visibleError = false;
         this.form.reset({
-          name: '',
+          name: "",
         });
         this.getGenres();
       },
@@ -170,40 +183,40 @@ export class GenresComponent implements OnInit {
 
   private setupTableResizeObserver(): void {
     if (!this.genresTable) return;
-    
-    this.resizeObserver = new ResizeObserver(entries => {
-      entries.forEach(entry => {
-        console.log('The gender table has been resized:', entry.contentRect);
+
+    this.resizeObserver = new ResizeObserver((entries) => {
+      entries.forEach((entry) => {
+        console.log("The gender table has been resized:", entry.contentRect);
         this.adjustTableColumns();
       });
     });
-    
+
     this.resizeObserver.observe(this.genresTable.nativeElement);
   }
 
   private adjustTableColumns(): void {
     if (!this.genresTable) return;
-    
+
     const table = this.genresTable.nativeElement;
     const containerWidth = table.offsetWidth;
-    const headers = table.querySelectorAll('th');
-    
+    const headers = table.querySelectorAll("th");
+
     // Adjust column widths based on container width
     if (containerWidth < 600) {
       // Mobile view
       headers.forEach((header, index) => {
         if (index > 0) {
-          header.style.display = 'none';
+          header.style.display = "none";
         } else {
-          header.style.display = 'table-cell';
-          header.style.width = '100%';
+          header.style.display = "table-cell";
+          header.style.width = "100%";
         }
       });
     } else {
       // Desktop view
-      headers.forEach(header => {
-        header.style.display = 'table-cell';
-        header.style.width = ''; // Restore default width
+      headers.forEach((header) => {
+        header.style.display = "table-cell";
+        header.style.width = ""; // Restore default width
       });
     }
   }
@@ -215,14 +228,14 @@ export class GenresComponent implements OnInit {
     );
   }
   controlError(err: any) {
-    if (err.error && typeof err.error === 'object' && err.error.message) {
+    if (err.error && typeof err.error === "object" && err.error.message) {
       this.errorMessage = err.error.message;
-    } else if (typeof err.error === 'string') {
+    } else if (typeof err.error === "string") {
       // If `err.error` is a string, it is assumed to be the error message
       this.errorMessage = err.error;
     } else {
       // Handles the case where no useful error message is received
-      this.errorMessage = 'An unexpected error has occurred';
+      this.errorMessage = "An unexpected error has occurred";
     }
   }
 
@@ -231,7 +244,7 @@ export class GenresComponent implements OnInit {
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
     }
-    
+
     this.destroy$.next();
     this.destroy$.complete();
   }

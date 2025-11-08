@@ -1,33 +1,35 @@
-import { Component, OnInit, afterNextRender, inject, DestroyRef, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { CommonModule } from '@angular/common';
-import { Router, NavigationEnd, RouterLink } from '@angular/router';
-import { FormsModule } from '@angular/forms';
-import { UserService } from 'src/app/services/UserService';
-import { CartService } from 'src/app/ecommerce/services/CartService';
-import { of } from 'rxjs';
-import { filter, switchMap, tap } from 'rxjs/operators';
-import { ButtonModule } from 'primeng/button';
-import { TooltipModule } from 'primeng/tooltip';
+import {
+  Component,
+  OnInit,
+  afterNextRender,
+  inject,
+  DestroyRef,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+} from "@angular/core";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
+import { CommonModule } from "@angular/common";
+import { Router, NavigationEnd, RouterLink } from "@angular/router";
+import { FormsModule } from "@angular/forms";
+import { UserService } from "src/app/services/user";
+import { CartService } from "src/app/ecommerce/services/cart";
+import { of } from "rxjs";
+import { filter, switchMap, tap } from "rxjs/operators";
+import { ButtonModule } from "primeng/button";
+import { TooltipModule } from "primeng/tooltip";
 
 @Component({
-    selector: 'app-navbar',
-    imports: [
-        CommonModule,
-        RouterLink,
-        FormsModule,
-        ButtonModule,
-        TooltipModule
-    ],
-    templateUrl: './NavbarComponent.html',
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector: "app-navbar",
+  imports: [CommonModule, RouterLink, FormsModule, ButtonModule, TooltipModule],
+  templateUrl: "./navbar.html",
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NavbarComponent implements OnInit {
   emailUser: string | null = null;
   role: string | null = null;
   cartItemsCount: number = 0;
   cartTotal: number = 0;
-  currentRoute: string = '';
+  currentRoute: string = "";
   cartEnabled: boolean = true;
   private readonly destroyRef = inject(DestroyRef);
 
@@ -77,10 +79,12 @@ export class NavbarComponent implements OnInit {
       .subscribe();
 
     // Subscription to user role
-    this.userService.role$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((role) => {
-      this.role = role;
-      this.cdr.markForCheck();
-    });
+    this.userService.role$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((role) => {
+        this.role = role;
+        this.cdr.markForCheck();
+      });
 
     // Subscription to cart item count
     this.cartService.cartItemCount$
@@ -108,66 +112,80 @@ export class NavbarComponent implements OnInit {
         this.currentRoute = event.url;
         this.cdr.detectChanges(); // Trigger change detection
       });
-    
+
     // Initial route check
     this.currentRoute = this.router.url;
     this.cdr.detectChanges();
   }
 
   isAdmin(): boolean {
-    const isAdmin = this.role?.toLowerCase() === 'admin';
+    const isAdmin = this.role?.toLowerCase() === "admin";
     return isAdmin;
   }
 
   isListGroupsPage(): boolean {
-    return this.currentRoute.includes('/listgroups') || this.currentRoute === '/';
+    return (
+      this.currentRoute.includes("/listgroups") || this.currentRoute === "/"
+    );
   }
 
   isOrdersPage(): boolean {
-    const isOrdersPage = this.currentRoute.includes('/admin-orders') || this.currentRoute.includes('/orders');
+    const isOrdersPage =
+      this.currentRoute.includes("/admin-orders") ||
+      this.currentRoute.includes("/orders");
     return isOrdersPage;
   }
 
   isGenresPage(): boolean {
-    return this.currentRoute.includes('/genres') || this.currentRoute === '/genres';
+    return (
+      this.currentRoute.includes("/genres") || this.currentRoute === "/genres"
+    );
   }
 
   isGroupsPage(): boolean {
-    return this.currentRoute.includes('/groups') || this.currentRoute === '/groups';
+    return (
+      this.currentRoute.includes("/groups") || this.currentRoute === "/groups"
+    );
   }
 
   isRecordsPage(): boolean {
-    return this.currentRoute.includes('/records') || this.currentRoute === '/records';
+    return (
+      this.currentRoute.includes("/records") || this.currentRoute === "/records"
+    );
   }
 
   isCartsPage(): boolean {
-    return this.currentRoute.includes('/carts') || this.currentRoute === '/carts';
+    return (
+      this.currentRoute.includes("/carts") || this.currentRoute === "/carts"
+    );
   }
 
   isUsersPage(): boolean {
-    return this.currentRoute.includes('/users') || this.currentRoute === '/users';
+    return (
+      this.currentRoute.includes("/users") || this.currentRoute === "/users"
+    );
   }
 
   logout(): void {
-    sessionStorage.removeItem('user');
-    sessionStorage.removeItem('role');
+    sessionStorage.removeItem("user");
+    sessionStorage.removeItem("role");
     this.userService.clearUser();
-    this.router.navigate(['/login']);
+    this.router.navigate(["/login"]);
   }
 
   private updateNavbarStyles(): void {
     // Update classes based on the current route
     const homeLink = document.querySelector('.nav-link[routerLink="/"]');
     if (homeLink) {
-      if (this.currentRoute === '/') {
-        homeLink.classList.add('active');
+      if (this.currentRoute === "/") {
+        homeLink.classList.add("active");
       } else {
-        homeLink.classList.remove('active');
+        homeLink.classList.remove("active");
       }
     }
   }
 
   isLoginPage(): boolean {
-    return this.currentRoute.includes('/login');
+    return this.currentRoute.includes("/login");
   }
 }
