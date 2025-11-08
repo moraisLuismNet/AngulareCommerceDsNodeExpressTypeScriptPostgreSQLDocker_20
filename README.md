@@ -80,7 +80,7 @@ AngulareCommerceDsNodeExpressTypeScriptPostgreSQLDocker_20/
 │   ├───environment.development.ts  
 │   └───environment.ts  
 ├───main.ts   
-├───angular.json 
+├───angular.json   
 └───package.json  
 
 ![AngulareCommderceDs](img/01.png)
